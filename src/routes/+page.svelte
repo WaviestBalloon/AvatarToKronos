@@ -1,0 +1,195 @@
+<script>
+	// @ts-nocheck ill bother with typings later :3
+	const apiBackend = "https://atk.wav.blue"; // I was going to do EVERYTHING from the client-side but, CORS blocked all of my requests, so we have to proxy it through my server :(
+	const commands = {
+		"accessory": "!hat",
+		"shirt": "!shirt",
+		"pants": "!pants",
+		"tshirt": "!tshirt",
+		"purge": "!removehats",
+		"delay": "!wait"
+	}
+	let waitDelay = 1;
+	let clearAccessories = true;
+	let ignoreList = {
+		shirt: false,
+		pants: false,
+		tshirt: false
+	};
+	let userInput = "WaviestBalloon";
+	let outputCommand = "> No commands generated yet :(";
+	let accessories = [];
+	let formattedAccessories = '> No user has been fetched yet! Enter in their username and hit "Fetch" to get their accessories.';
+
+	function listAccessories() {
+		let output = "";
+		for (let i = 0; i < accessories.length; i++) {
+			const accessory = accessories[i];
+			console.log(accessory);
+			if (ignoreList[accessory.whatIsIt]) continue; // If in ignore settings, skip
+
+			if (i == accessories.length - 1) {
+				output += `${accessory.name} (${accessory.accessoryType})`;
+			} else {
+				output += `${accessory.name} (${accessory.accessoryType})\n`;
+			}
+		}
+		return output;
+	}
+
+	function createCommandChain() { // TODO: clean up :c
+		let output = "";
+		let howManyCommandsIn = 0;
+
+		console.log(`Generating command chain...`);
+
+		if (clearAccessories) { // If we want to remove all of our accessories at the start of the command chain
+			output += `${commands.purge} | `;
+			howManyCommandsIn++;
+		}
+
+		for (let i = 0; i < accessories.length; i++) {
+			const item = accessories[i];
+			if (howManyCommandsIn == 4) {
+				console.log(`Adding delay of ${waitDelay} seconds to chain...`);
+				output += `${commands.delay} ${waitDelay} | `;
+				howManyCommandsIn = 0;
+			}
+			howManyCommandsIn++;
+
+			if (item.whatIsIt == "accessory") {
+				output += `${commands.accessory} ${item.id} | `;
+			} else if (item.whatIsIt == "shirt") {
+				output += `${commands.shirt} ${item.id} | `;
+			} else if (item.whatIsIt == "pants") {
+				output += `${commands.pants} ${item.id} | `;
+			} else if (item.whatIsIt == "tshirt") {
+				output += `${commands.tshirt} ${item.id} | `;
+			} else {
+				console.warn(`Unknown item type: ${item.whatIsIt}`);
+				alert(`Unknown item type was found during generation: ${item.whatIsIt}\nPress OK to continue`);
+			}
+
+			console.log(`Added ${item.name} to the command chain!`);
+		}
+
+		if (output.endsWith(" | ")) {
+			output = output.slice(0, -3);
+		}
+
+		outputCommand = output;
+		return output;
+	}
+
+	/**
+     * @param {any} username
+     */
+	async function resolveUserIdBasedOnUsername(username) {
+		const response = await fetch(`${apiBackend}/resolve/${username}`).catch((err) => {
+			alert(`The request to resolve the User ID has failed...\n\nNerd Stuff: ${err}`);
+			throw "Unable to resolve User ID";
+		});
+		const data = Number(await response.text()) || null;
+
+		if (data) {
+			console.log(`Resolved ${username} to ${data}!`);
+			return data;
+		} else {
+			alert(`Unable to resolve ${username} to a User ID, are you sure they even exist?\nRemember, use their username and not their display name.`);
+			throw "User not found";
+		}
+	}
+
+	async function getUserInfo() {
+		console.log(`Getting user info for ${userInput}...`);
+		if (isNaN(userInput)) {
+			userInput = await resolveUserIdBasedOnUsername(userInput);
+		}
+
+		let response = await fetch(`${apiBackend}/getcurrentwearing/${userInput}`).catch((err) => {
+			alert(`The request to get the user's current avatar has failed...\n\nNerd Stuff: ${err}`);
+			throw "Unable to get user's current avatar";
+		});
+		let data = await response.json();
+
+		accessories = data;
+		formattedAccessories = listAccessories();
+		return data;
+	}
+
+	function copyCommandChainToClipboard() {
+		if (outputCommand == "> No commands generated yet :(") {
+			alert("You haven't generated any commands yet!");
+			return;
+		}
+
+		navigator.clipboard.writeText(outputCommand).then(() => {
+			alert("Copied to clipboard!");
+		}).catch((err) => {
+			alert(`Failed to copy to clipboard...\n\nNerd Stuff: ${err}`);
+		});
+	}
+</script>
+
+<h1 style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Avatar to Kronos</h1>
+<p>Generate chained avatar commands based on a Roblox user's current avatar</p>
+<i class="gradtext" style="font-size: smaller;">Built by Waviest, view sause code on <a href="https://github.com/WaviestBalloon/AvatarToKronos">GitHub</a></i>
+
+<br><br><br>
+
+<span style="display: inline-flex; flex: 1; width:100%">
+	<div class="block">
+		<h1 class="block-header">
+			<img src="wrench.svg" alt="SettingsIcon" class="header-icon">
+			<code>Settings</code>
+		</h1>
+		
+		<p>Delay per four commands: <br><input type="range" bind:value={waitDelay} min="0" max="10" step="0.1" /> <code>{waitDelay}s</code></p>
+		<p><input type="checkbox" bind:checked={clearAccessories} /> Clear all accessories when ran</p>
+		<p><input type="checkbox" bind:checked={ignoreList.shirt} /> Ignore shirt</p>
+		<p><input type="checkbox" bind:checked={ignoreList.tshirt} /> Ignore t-shirt</p>
+		<p><input type="checkbox" bind:checked={ignoreList.pants} /> Ignore pants</p>
+		<br>
+		<div class="warning-tape-background">
+			<h3 class="block-header">
+				<img src="red-alert.svg" width=18.72px alt="SettingsIcon" class="header-icon">
+				<code style="color: #ff5c5c;">Danger Zone<br><i style="font-size: small;">Not implemented yet</i></code>
+			</h3>
+			<center>
+				<button class="warning">RESET SETTINGS</button>
+				<button class="warning">CLEAR ACCESSORIES</button>
+			</center>
+		</div>
+	</div>
+	<hr class="splitter">
+	<div class="block">
+		<h1 class="block-header">
+			<img src="import.svg" alt="ImportIcon" class="header-icon">
+			<code>Create</code>
+		</h1>
+		
+		<!--<center>
+			<img src="https://t0.rbxcdn.com/30DAY-AvatarHeadshot-2BB2F5470323665D06A2307C5429B0F2-Png" width="20%" alt="AvatarPreview" class="pfp">
+		</center>-->
+
+		<p>Username/ID: <input type="search" bind:value={userInput} placeholder="Roblox username or user ID here" /> <button on:click={getUserInfo}>Fetch</button></p>
+		<p>Accessories: </p>
+		<textarea rows="10" style="resize: none;">{formattedAccessories}</textarea>
+	</div>
+	<hr class="splitter">
+	<div class="block">
+		<h1 class="block-header">
+			<img src="clipboard-copy.svg" alt="CopyResultIcon" class="header-icon">
+			<code>Result</code>
+		</h1>
+	
+		<textarea rows="4">{outputCommand}</textarea>
+		<br><br>
+		<button on:click={copyCommandChainToClipboard}>Copy to clipboard</button>
+		<button on:click={createCommandChain}>Regenerate</button>
+	</div>
+</span>
+
+<br><br>
+<code style="color: #ff5c5c;">[ Disclaimer ]<br>Due to Roblox's API CORS configuration, this website relies on a backend (that makes the requests for you) ran by me and not Roblox<br>Blame the web team for disallowing webpages to request to their API<br>I do not store any data related to your requests</code>
+<br>

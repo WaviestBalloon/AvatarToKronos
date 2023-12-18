@@ -1,0 +1,179 @@
+@font-face {
+	font-family: gotham;
+	src: url("https://roblox.network/gothambook.otf");
+}
+@font-face {
+	font-family: gothambold;
+	src: url("https://roblox.network/gothamblack.otf");
+}
+@font-face {
+	font-family: gothamsemibold;
+	src: url("https://roblox.network/gothammedium.otf");
+}
+
+body, html {
+	margin: 0;
+	font-family: gotham;
+	background-color: #1b1b1b;
+	color: white;
+	padding: 10px;
+	background-image: url('https://fur.dev/dotlogoutbg.png');
+	background-size: 5px 5px;
+	background-position: center;
+	background-repeat: repeat;
+}
+
+button {
+	border-radius: 0% !important;
+}
+
+b {
+	font-family: gothambold;
+}
+
+p {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+button {
+	background-color: #3131319a;
+	border: #2b2b2b 0.1rem solid;
+	box-shadow: 0px 0px 0px 0px #2b2b2b;
+	padding: 0.35rem;
+	margin: 0.15rem;
+	padding-left: 7px;
+	padding-right: 7px;
+	margin-bottom: 3px !important;
+	margin-top: 3px !important;
+	font-family: "Lucida Console", monospace;
+	overflow: hidden;
+	color: white;
+	
+	transition: all 0.2s ease-in-out;
+}
+button:hover {
+	background-color: #30303085;
+	border: #303030 0.1rem solid;
+	border-left: #303030 0.55rem solid;
+	border-right: #303030 0.55rem solid;
+	box-shadow: 0px 0px 25px 0px #303030;
+}
+.warning {
+	background-color: #ff5c5c9a;
+	border: #ff5c5c 0.1rem solid;
+	/*box-shadow: 0px 0px 50px 0px #ff5c5c9a;*/
+	box-shadow: 0px 0px 0px 0px #ff5c5c9a;
+	padding: 0.35rem;
+	padding-left: 7px;
+	padding-right: 7px;
+	margin-bottom: 0px;
+	margin-top: 0px;
+	font-family: "Lucida Console", monospace;
+	overflow: hidden;
+	color: white;
+	font-weight: normal;
+	
+	transition: all 0.2s ease-in-out;
+}
+.warning:hover {
+	background-color: #ff5c5c85;
+	border: #ff5c5c 0.1rem solid;
+	border-left: #ff5c5c 0.55rem solid;
+	border-right: #ff5c5c 0.55rem solid;
+	box-shadow: 0px 0px 25px 0px #ff49499a;
+	font-weight: bold;
+}
+
+.splitter {
+	margin-top: 55px;
+	margin-bottom: 55px;
+	opacity: 0.25;
+	color:rgba(255, 255, 255);
+}
+
+.block {
+	background-color: #2b2b2b88;
+	border-style: solid;
+	border-top-width: 1px;
+	border-left-width: 1px;
+	border-bottom-width: 1px;
+	border-right-width: 1px;
+	border-color: rgba(255, 255, 255, 0.15);
+	width: 100%;
+	padding: 8.5px;
+	margin-left: 5px;
+	margin-right: 5px;
+	filter: drop-shadow(0px 0px 20px rgba(0, 0, 0, 0.75));
+}
+
+.block-header {
+	margin-bottom: 15px;
+	margin-top: 0px;
+	text-align: center;
+	font-weight: normal;
+}
+
+.warning-tape-background {
+	background-image: url('slash.svg');
+	background-size: 5px 5px;
+	background-position: center;
+	background-repeat: repeat;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+textarea {
+	background-color: rgba(119, 207, 78, 0.15);
+	border-style: solid;
+	border-top-width: 1px;
+	border-left-width: 1px;
+	border-bottom-width: 1px;
+	border-right-width: 1px;
+	border-color: rgba(255, 255, 255, 0.15);
+	padding: 5px;
+	color: rgb(105, 190, 65);
+	filter: drop-shadow(0px 0px 20px rgb(105, 190, 65));
+	resize: vertical;
+	overflow-x: scroll;
+	width: calc(100% - 12px);
+}
+
+.pfp {
+	background-color: rgba(0, 0, 0, 0.15);
+	border-style: solid;
+	border-top-width: 1px;
+	border-left-width: 1px;
+	border-bottom-width: 1px;
+	border-right-width: 1px;
+	border-color: rgba(255, 255, 255, 0.15);
+	padding: 5px;
+	border-radius: 5%;
+}
+
+.header-icon {
+	margin-bottom: -3px;
+}
+
+.gradtext {
+	background: linear-gradient(90deg, #e8c8e8, #bedefa);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 0px 45px #d2d5f2;
+}
+
+.loading {
+	background-color: rgb(255, 255, 255);
+	mask: linear-gradient(90deg, rgba(0, 0, 0, 0.35) 50%, black) 100% 100% / 200% 200%;
+	animation: loadingshiny-swipe 3s infinite ease-in-out;
+	animation-fill-mode: none;
+}
+@keyframes loadingshiny-swipe {
+	from {
+		mask-position: 400% 0;
+	}
+	to {
+		mask-position: 0 0;
+	}
+}
