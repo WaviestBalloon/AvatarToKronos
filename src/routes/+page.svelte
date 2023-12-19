@@ -9,13 +9,15 @@
 		"purge": "!removehats",
 		"delay": "!wait"
 	}
-	let waitDelay = 1;
+	let waitDelay = 4.5;
 	let clearAccessories = true;
 	let ignoreList = {
 		shirt: false,
 		pants: false,
-		tshirt: false
+		tshirt: false,
+		accessories: false
 	};
+	let shouldAutoUpdate = true;
 	let userInput;
 	let outputCommand = "> No commands generated yet :(";
 	let accessories = [];
@@ -55,9 +57,9 @@
 				output += `${commands.delay} ${waitDelay} | `;
 				howManyCommandsIn = 0;
 			}
-			howManyCommandsIn++;
 
 			if (item.whatIsIt == "accessory") {
+				if (ignoreList.accessories) continue; // If in ignore settings, skip
 				output += `${commands.accessory} ${item.id} | `;
 			} else if (item.whatIsIt == "shirt") {
 				if (ignoreList.shirt) continue; // If in ignore settings, skip
@@ -71,8 +73,10 @@
 			} else {
 				console.warn(`Unknown item type: ${item.whatIsIt}`);
 				alert(`Unknown item type was found during generation: ${item.whatIsIt}\nPress OK to continue`);
+				continue;
 			}
 
+			howManyCommandsIn++;
 			console.log(`Added ${item.name} to the command chain!`);
 		}
 
@@ -82,6 +86,15 @@
 
 		outputCommand = output;
 		return output;
+	}
+
+	function updateCommandChain() {
+		if (shouldAutoUpdate) {
+			console.log("Updating command chain because auto update is enabled and a value was changed...");
+			createCommandChain();
+			return;
+		}
+		console.log("Not updating command chain because auto update is disabled");
 	}
 
 	/**
@@ -149,11 +162,13 @@
 			<code>Settings</code>
 		</h1>
 		
-		<p>Delay per four commands: <br><input type="range" bind:value={waitDelay} min="0" max="10" step="0.1" /> <code>{waitDelay}s</code></p>
-		<p><input type="checkbox" bind:checked={clearAccessories} /> Clear all accessories when ran</p>
-		<p><input type="checkbox" bind:checked={ignoreList.shirt} /> Ignore shirt</p>
-		<p><input type="checkbox" bind:checked={ignoreList.tshirt} /> Ignore t-shirt</p>
-		<p><input type="checkbox" bind:checked={ignoreList.pants} /> Ignore pants</p>
+		<p>Delay per four commands: <br><input type="range" bind:value={waitDelay} on:change={updateCommandChain} min="0" max="10" step="0.1" /> <code>{waitDelay}s</code></p>
+		<p><input type="checkbox" bind:checked={clearAccessories} on:change={updateCommandChain} /> Clear all accessories when ran</p>
+		<p><input type="checkbox" bind:checked={ignoreList.shirt} on:change={updateCommandChain} /> Ignore shirt</p>
+		<p><input type="checkbox" bind:checked={ignoreList.tshirt} on:change={updateCommandChain} /> Ignore t-shirt</p>
+		<p><input type="checkbox" bind:checked={ignoreList.pants} on:change={updateCommandChain} /> Ignore pants</p>
+		<p><input type="checkbox" bind:checked={ignoreList.accessories} on:change={updateCommandChain} /> Ignore accessories</p>
+		<p><input type="checkbox" bind:checked={shouldAutoUpdate} on:change={updateCommandChain} /> Regenerate command chain on settings change</p>
 		<br>
 		<div class="warning-tape-background">
 			<h3 class="block-header">

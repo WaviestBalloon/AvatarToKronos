@@ -115,7 +115,7 @@ button:hover {
 }
 
 .warning-tape-background {
-	background-image: url('slash.svg');
+	background-image: url('https://avatartokronos.vercel.app/slash.svg');
 	background-size: 5px 5px;
 	background-position: center;
 	background-repeat: repeat;
