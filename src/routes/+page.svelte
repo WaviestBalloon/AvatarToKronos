@@ -6,22 +6,34 @@
 		"shirt": "!shirt",
 		"pants": "!pants",
 		"tshirt": "!tshirt",
+		"face": "!face",
+		"bodycolour": "!neon",
 		"purge": "!removehats",
 		"delay": "!wait"
 	}
 	let waitDelay = 4.5;
-	let clearAccessories = true;
 	let ignoreList = {
 		shirt: false,
 		pants: false,
 		tshirt: false,
-		accessories: false
+		accessories: false,
+		face: false,
+		bodycolour: false
+	};
+	let clearRules = {
+		shirt: false,
+		pants: false,
+		tshirt: false,
+		accessories: true,
+		face: false
 	};
 	let shouldAutoUpdate = true;
 	let userInput;
 	let outputCommand = "> No commands generated yet :(";
 	let accessories = [];
+	let bodyColour = 0;
 	let formattedAccessories = '> No user has been fetched yet! Enter in their username and hit "Fetch" to get their accessories.';
+	let copyText = "Copy to clipboard";
 
 	function listAccessories() {
 		let output = "";
@@ -45,14 +57,31 @@
 
 		console.log(`Generating command chain...`);
 
-		if (clearAccessories) { // If we want to remove all of our accessories at the start of the command chain
+		if (clearRules.accessories) { // If we want to remove all of our accessories at the start of the command chain
 			output += `${commands.purge} | `;
+			howManyCommandsIn++;
+		}
+		if (clearRules.shirt) { // If we want to remove our shirt at the start of the command chain
+			output += `${commands.shirt} 0 | `;
+			howManyCommandsIn++;
+		}
+		if (clearRules.tshirt) { // If we want to remove our t-shirt at the start of the command chain
+			output += `${commands.tshirt} 0 | `;
+			howManyCommandsIn++;
+		}
+		if (clearRules.pants) { // If we want to remove our pants at the start of the command chain
+			output += `${commands.pants} 0 | `;
+			howManyCommandsIn++;
+		}
+
+		if (!ignoreList.bodycolour) {
+			output += `${commands.bodycolour} ${bodyColour} | `;
 			howManyCommandsIn++;
 		}
 
 		for (let i = 0; i < accessories.length; i++) {
 			const item = accessories[i];
-			if (howManyCommandsIn == 4) {
+			if (howManyCommandsIn >= 4) {
 				console.log(`Adding delay of ${waitDelay} seconds to chain...`);
 				output += `${commands.delay} ${waitDelay} | `;
 				howManyCommandsIn = 0;
@@ -70,6 +99,9 @@
 			} else if (item.whatIsIt == "tshirt") {
 				if (ignoreList.tshirt) continue; // If in ignore settings, skip
 				output += `${commands.tshirt} ${item.id} | `;
+			} else if (item.whatIsIt == "face") {
+				if (ignoreList.face) continue; // If in ignore settings, skip
+				output += `${commands.face} ${item.id} | `;
 			} else {
 				console.warn(`Unknown item type: ${item.whatIsIt}`);
 				alert(`Unknown item type was found during generation: ${item.whatIsIt}\nPress OK to continue`);
@@ -129,7 +161,8 @@
 		let data = await response.json();
 		console.log(`Got user info for ${userInput}!`);
 
-		accessories = data;
+		accessories = data.outfit;
+		bodyColour = data.body.skintone;
 		formattedAccessories = listAccessories();
 		createCommandChain();
 		return data;
@@ -142,7 +175,10 @@
 		}
 
 		navigator.clipboard.writeText(outputCommand).then(() => {
-			alert("Copied to clipboard!");
+			copyText = "Copied!";
+			setTimeout(() => {
+				copyText = "Copy to clipboard";
+			}, 1000);
 		}).catch((err) => {
 			alert(`Failed to copy to clipboard...\n\nNerd Stuff: ${err}`);
 		});
@@ -162,13 +198,18 @@
 			<code>Settings</code>
 		</h1>
 		
-		<p>Delay per four commands: <br><input type="range" bind:value={waitDelay} on:change={updateCommandChain} min="0" max="10" step="0.1" /> <code>{waitDelay}s</code></p>
-		<p><input type="checkbox" bind:checked={clearAccessories} on:change={updateCommandChain} /> Clear all accessories when ran</p>
+		<p>Delay per four commands: <br><input type="range" bind:value={waitDelay} on:change={updateCommandChain} min="0" max="10" step="0.1" /> <code>{waitDelay}s<br>(4-6s is the sweet spot for Kronos)</code></p>
+		<p><input type="checkbox" bind:checked={clearRules.accessories} on:change={updateCommandChain} /> Clear all accessories when ran</p>
+		<p><input type="checkbox" bind:checked={clearRules.shirt} on:change={updateCommandChain} /> Clear shirt when ran</p>
+		<p><input type="checkbox" bind:checked={clearRules.tshirt} on:change={updateCommandChain} /> Clear t-shirt when ran</p>
+		<p><input type="checkbox" bind:checked={clearRules.pants} on:change={updateCommandChain} /> Clear pants when ran</p>
 		<p><input type="checkbox" bind:checked={ignoreList.shirt} on:change={updateCommandChain} /> Ignore shirt</p>
 		<p><input type="checkbox" bind:checked={ignoreList.tshirt} on:change={updateCommandChain} /> Ignore t-shirt</p>
 		<p><input type="checkbox" bind:checked={ignoreList.pants} on:change={updateCommandChain} /> Ignore pants</p>
 		<p><input type="checkbox" bind:checked={ignoreList.accessories} on:change={updateCommandChain} /> Ignore accessories</p>
-		<p><input type="checkbox" bind:checked={shouldAutoUpdate} on:change={updateCommandChain} /> Regenerate command chain on settings change</p>
+		<p><input type="checkbox" bind:checked={ignoreList.face} on:change={updateCommandChain} /> Ignore face</p>
+		<p><input type="checkbox" bind:checked={ignoreList.bodycolour} on:change={updateCommandChain} /> Ignore torso body colour</p>
+		<p><input type="checkbox" bind:checked={shouldAutoUpdate} on:change={updateCommandChain} /> Regenerate chain on value change</p>
 		<br>
 		<div class="warning-tape-background">
 			<h3 class="block-header">
@@ -193,7 +234,7 @@
 		</center>-->
 
 		<p>Username/ID: <input type="search" bind:value={userInput} placeholder="Roblox username or user ID here" /> <button on:click={getUserInfo}>Fetch</button></p>
-		<p>Accessories: </p>
+		<p>Wearing Accessories: </p>
 		<textarea rows="10" style="resize: none;">{formattedAccessories}</textarea>
 	</div>
 	<hr class="splitter">
@@ -205,11 +246,11 @@
 	
 		<textarea rows="4">{outputCommand}</textarea>
 		<br><br>
-		<button on:click={copyCommandChainToClipboard}>Copy to clipboard</button>
+		<button on:click={copyCommandChainToClipboard}>{copyText}</button>
 		<button on:click={createCommandChain}>Generate</button>
 	</div>
 </span>
 
 <br><br>
-<code style="color: #ff5c5c;">[ Disclaimer ]<br>Due to Roblox's API CORS configuration, this website relies on a backend (that makes the requests for you) ran by me and not Roblox<br>Blame the web team for disallowing webpages to request to their API<br>I do not store any data related to your requests</code>
+<code style="color: #ff5c5c;">[ Disclaimer ]<br>Due to the Roblox API's CORS configuration, this website relies on a backend (that makes the requests for you) ran by me and not Roblox<br>Blame the web team for disallowing webpages to request to their API<br>I do not store any data related to your requests</code>
 <br>
