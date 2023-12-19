@@ -16,7 +16,7 @@
 		pants: false,
 		tshirt: false
 	};
-	let userInput = "WaviestBalloon";
+	let userInput;
 	let outputCommand = "> No commands generated yet :(";
 	let accessories = [];
 	let formattedAccessories = '> No user has been fetched yet! Enter in their username and hit "Fetch" to get their accessories.';
@@ -60,10 +60,13 @@
 			if (item.whatIsIt == "accessory") {
 				output += `${commands.accessory} ${item.id} | `;
 			} else if (item.whatIsIt == "shirt") {
+				if (ignoreList.shirt) continue; // If in ignore settings, skip
 				output += `${commands.shirt} ${item.id} | `;
 			} else if (item.whatIsIt == "pants") {
+				if (ignoreList.pants) continue; // If in ignore settings, skip
 				output += `${commands.pants} ${item.id} | `;
 			} else if (item.whatIsIt == "tshirt") {
+				if (ignoreList.tshirt) continue; // If in ignore settings, skip
 				output += `${commands.tshirt} ${item.id} | `;
 			} else {
 				console.warn(`Unknown item type: ${item.whatIsIt}`);
