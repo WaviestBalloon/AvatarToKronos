@@ -114,9 +114,11 @@
 			throw "Unable to get user's current avatar";
 		});
 		let data = await response.json();
+		console.log(`Got user info for ${userInput}!`);
 
 		accessories = data;
 		formattedAccessories = listAccessories();
+		createCommandChain();
 		return data;
 	}
 
@@ -189,7 +191,7 @@
 		<textarea rows="4">{outputCommand}</textarea>
 		<br><br>
 		<button on:click={copyCommandChainToClipboard}>Copy to clipboard</button>
-		<button on:click={createCommandChain}>Regenerate</button>
+		<button on:click={createCommandChain}>Generate</button>
 	</div>
 </span>
 
