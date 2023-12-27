@@ -171,6 +171,7 @@
 		accessories = data.outfit;
 		bodyColour = data.body.skintone;
 		formattedAccessories = listAccessories();
+		createCommandChain();
 		return data;
 	}
 
@@ -190,28 +191,47 @@
 		});
 	}
 
+	function sanitiseInput(text) {
+		return text.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
+	}
 	function createSaveHash(type) {
 		let data;
 
 		if (type == "settings") {
+			const w = waitDelay;
+			const i = ignoreList;
+			const c = clearRules;
+			const s = shouldAutoUpdate;
 			data = JSON.stringify({
-				waitDelay,
-				ignoreList,
-				clearRules,
-				shouldAutoUpdate
+				w,
+				i,
+				c,
+				s
 			});
 		} else if (type == "outfit") {
+			const sanitisedAccessories = JSON.parse(sanitiseInput(JSON.stringify(accessories)));
+			const u = userInput;
+			const a = sanitisedAccessories;
+			const b = bodyColour;
 			data = JSON.stringify({
-				userInput,
-				accessories,
-				bodyColour
+				u,
+				a,
+				b
 			});
 		} else {
 			console.warn(`Unknown save hash type: ${type}`);
 			return;
 		}
 		
-		return btoa(data);
+		let output;
+
+		try {
+			output = btoa(data);
+		} catch (err) {
+			alert(`Failed to create save hash...\n\nNerd Stuff: ${err}`);
+		}
+
+		return output;
 	}
 	function deleteSaveCookies(type) {
 		if (type == "settings") {
@@ -244,22 +264,31 @@
 		const outfitHash = urlParams.get("o");
 		const settingsHash = urlParams.get("s");
 
-		if (outfitHash) {
-			console.log("Found outfit hash in URL, loading outfit...");
-			const outfitData = JSON.parse(atob(outfitHash));
-			userInput = outfitData.userInput;
-			accessories = outfitData.accessories;
-			bodyColour = outfitData.bodyColour;
-			formattedAccessories = listAccessories();
-			shareLink = generateShareLink();
-		}
 		if (settingsHash) {
 			console.log("Found settings hash in URL, loading settings...");
-			const settingsData = JSON.parse(atob(settingsHash));
-			waitDelay = settingsData.waitDelay;
-			ignoreList = settingsData.ignoreList;
-			clearRules = settingsData.clearRules;
-			shouldAutoUpdate = settingsData.shouldAutoUpdate;
+			try {
+				const settingsData = JSON.parse(atob(settingsHash));
+				waitDelay = settingsData.w;
+				ignoreList = settingsData.i;
+				clearRules = settingsData.c;
+				shouldAutoUpdate = settingsData.s;
+			} catch (err) {
+				alert(`Failed to load attached settings from URL...\nIt is most likely corrupted!\n\nNerd Stuff: ${err}`);
+			}
+		}
+		if (outfitHash) {
+			console.log("Found outfit hash in URL, loading outfit...");
+			try {
+				const outfitData = JSON.parse(atob(outfitHash));
+				console.log(outfitData);
+				userInput = outfitData.u;
+				accessories = outfitData.a;
+				bodyColour = outfitData.b;
+				formattedAccessories = listAccessories();
+				createCommandChain();
+			} catch (err) {
+				alert(`Failed to load outfit from URL...\nIt is most likely corrupted!\n\nNerd Stuff: ${err}`);
+			}
 		}
 	});
 </script>
