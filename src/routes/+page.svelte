@@ -5,9 +5,9 @@
 	const apiBackend = "https://atk.wav.blue"; // I was going to do EVERYTHING from the client-side but, CORS blocked all of my requests, so we have to proxy it through my server :(
 	const commands = {
 		"accessory": "!hat",
-		"shirt": "!shirt 0",
-		"pants": "!pants 0",
-		"tshirt": "!tshirt 0",
+		"shirt": "!shirt",
+		"pants": "!pants",
+		"tshirt": "!tshirt",
 		"face": "!face",
 		"bodycolour": "!neon",
 		"purge": "!removehats",
@@ -65,15 +65,15 @@
 			howManyCommandsIn++;
 		}
 		if (clearRules.shirt) { // If we want to remove our shirt at the start of the command chain
-			output += `${commands.shirt} | `;
+			output += `${commands.shirt} 0 | `;
 			howManyCommandsIn++;
 		}
 		if (clearRules.tshirt) { // If we want to remove our t-shirt at the start of the command chain
-			output += `${commands.tshirt} | `;
+			output += `${commands.tshirt} 0 | `;
 			howManyCommandsIn++;
 		}
 		if (clearRules.pants) { // If we want to remove our pants at the start of the command chain
-			output += `${commands.pants} | `;
+			output += `${commands.pants} 0 | `;
 			howManyCommandsIn++;
 		}
 
