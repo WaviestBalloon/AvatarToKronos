@@ -1,11 +1,13 @@
 <script>
 	// @ts-nocheck ill bother with typings later :3
+	import { onMount } from "svelte";
+
 	const apiBackend = "https://atk.wav.blue"; // I was going to do EVERYTHING from the client-side but, CORS blocked all of my requests, so we have to proxy it through my server :(
 	const commands = {
 		"accessory": "!hat",
-		"shirt": "!shirt",
-		"pants": "!pants",
-		"tshirt": "!tshirt",
+		"shirt": "!shirt 0",
+		"pants": "!pants 0",
+		"tshirt": "!tshirt 0",
 		"face": "!face",
 		"bodycolour": "!neon",
 		"purge": "!removehats",
@@ -34,6 +36,7 @@
 	let bodyColour = 0;
 	let formattedAccessories = '> No user has been fetched yet! Enter in their username and hit "Fetch" to get their accessories.';
 	let copyText = "Copy to clipboard";
+	let shareLink = "> Share link will show here once generated!";
 
 	function listAccessories() {
 		let output = "";
@@ -62,15 +65,15 @@
 			howManyCommandsIn++;
 		}
 		if (clearRules.shirt) { // If we want to remove our shirt at the start of the command chain
-			output += `${commands.shirt} 0 | `;
+			output += `${commands.shirt} | `;
 			howManyCommandsIn++;
 		}
 		if (clearRules.tshirt) { // If we want to remove our t-shirt at the start of the command chain
-			output += `${commands.tshirt} 0 | `;
+			output += `${commands.tshirt} | `;
 			howManyCommandsIn++;
 		}
 		if (clearRules.pants) { // If we want to remove our pants at the start of the command chain
-			output += `${commands.pants} 0 | `;
+			output += `${commands.pants} | `;
 			howManyCommandsIn++;
 		}
 
@@ -117,6 +120,10 @@
 		}
 
 		outputCommand = output;
+
+		console.log("Creating share link...");
+		generateShareLink();
+
 		return output;
 	}
 
@@ -164,7 +171,7 @@
 		accessories = data.outfit;
 		bodyColour = data.body.skintone;
 		formattedAccessories = listAccessories();
-		createCommandChain();
+		shareLink = generateShareLink();
 		return data;
 	}
 
@@ -183,6 +190,81 @@
 			alert(`Failed to copy to clipboard...\n\nNerd Stuff: ${err}`);
 		});
 	}
+
+	function createSaveHash(type) {
+		let data;
+
+		if (type == "settings") {
+			data = JSON.stringify({
+				waitDelay,
+				ignoreList,
+				clearRules,
+				shouldAutoUpdate
+			});
+		} else if (type == "outfit") {
+			data = JSON.stringify({
+				userInput,
+				accessories,
+				bodyColour
+			});
+		} else {
+			console.warn(`Unknown save hash type: ${type}`);
+			return;
+		}
+
+		console.log(data)
+
+		return btoa(data);
+	}
+	function deleteSaveCookies(type) {
+		if (type == "settings") {
+			document.cookie = "atk_settings=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+		} else if (type == "outfit") {
+			document.cookie = "atk_outfit=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+		} else {
+			console.warn(`Unknown save cookie type: ${type}`);
+			return;
+		}
+	}
+
+	let collapsed = true;
+	function toggleCollapsible() {
+		if (collapsed) {
+			collapsed = false;
+		} else {
+			collapsed = true;
+		}
+	}
+
+	function generateShareLink() {
+		const link = `https://avatartokronos.wav.blue/?o=${createSaveHash("outfit")}&s=${createSaveHash("settings")}`;
+		console.log("Generated share link!");
+		return link;
+	}
+
+	onMount(() => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const outfitHash = urlParams.get("o");
+		const settingsHash = urlParams.get("s");
+
+		if (outfitHash) {
+			console.log("Found outfit hash in URL, loading outfit...");
+			const outfitData = JSON.parse(atob(outfitHash));
+			userInput = outfitData.userInput;
+			accessories = outfitData.accessories;
+			bodyColour = outfitData.bodyColour;
+			formattedAccessories = listAccessories();
+			shareLink = generateShareLink();
+		}
+		if (settingsHash) {
+			console.log("Found settings hash in URL, loading settings...");
+			const settingsData = JSON.parse(atob(settingsHash));
+			waitDelay = settingsData.waitDelay;
+			ignoreList = settingsData.ignoreList;
+			clearRules = settingsData.clearRules;
+			shouldAutoUpdate = settingsData.shouldAutoUpdate;
+		}
+	});
 </script>
 
 <h1 style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Avatar to Kronos</h1>
@@ -211,14 +293,18 @@
 		<p><input type="checkbox" bind:checked={ignoreList.bodycolour} on:change={updateCommandChain} /> Ignore torso body colour</p>
 		<p><input type="checkbox" bind:checked={shouldAutoUpdate} on:change={updateCommandChain} /> Regenerate chain on value change</p>
 		<br>
-		<div class="warning-tape-background">
+		<button class="warning" on:click={toggleCollapsible}>DANGER ZONE OPTIONS</button>
+		<div class="warning-tape-background collapsible{collapsed === true ? " collapsed" : ""}">
 			<h3 class="block-header">
 				<img src="red-alert.svg" width=18.72px alt="SettingsIcon" class="header-icon">
-				<code style="color: #ff5c5c;">Danger Zone<br><i style="font-size: small;">Not implemented yet</i></code>
+				<code style="color: #ff5c5c;">Danger Zone<br><i style="font-size: small;">Nothing here can be undone!<br>NOT IMPLEMENTED YET</i></code>
 			</h3>
 			<center>
-				<button class="warning">RESET SETTINGS</button>
+				<code style="color: #ff5c5c;">/// Current Editor \\\</code><br>
 				<button class="warning">CLEAR ACCESSORIES</button>
+				<br><code style="color: #ff5c5c;">/// Saved Data \\\</code><br>
+				<button class="warning">RESET SETTINGS</button>
+				<button class="warning">RESET ACCESSORIES</button>
 			</center>
 		</div>
 	</div>
@@ -235,7 +321,7 @@
 
 		<p>Username/ID: <input type="search" bind:value={userInput} placeholder="Roblox username or user ID here" /> <button on:click={getUserInfo}>Fetch</button></p>
 		<p>Wearing Accessories: </p>
-		<textarea rows="10" style="resize: none;">{formattedAccessories}</textarea>
+		<textarea autocomplete="off" rows="10" style="resize: none;">{formattedAccessories}</textarea>
 	</div>
 	<hr class="splitter">
 	<div class="block">
@@ -244,13 +330,17 @@
 			<code>Result</code>
 		</h1>
 	
-		<textarea rows="4">{outputCommand}</textarea>
+		<textarea autocomplete="off" rows="4">{outputCommand}</textarea>
 		<br><br>
 		<button on:click={copyCommandChainToClipboard}>{copyText}</button>
 		<button on:click={createCommandChain}>Generate</button>
+		<br>
+		<code>Share link: <textarea autocomplete="off" class="textarea-link" rows="1">{shareLink}</textarea></code>
+		<!--<button on:click={createCommandChain}>Save current outfit</button><code style="color: #ff5c5c;">OVERWRITES PREVIOUSLY SAVED OUTFIT</code>-->
 	</div>
 </span>
 
 <br><br>
-<code style="color: #ff5c5c;">[ Disclaimer ]<br>Due to the Roblox API's CORS configuration, this website relies on a backend (that makes the requests for you) ran by me and not Roblox<br>Blame the web team for disallowing webpages to request to their API<br>I do not store any data related to your requests</code>
+<br><br>
+<code style="color: #ff5c5c;">[ Disclaimer ]<br>Due to the Roblox API's CORS configuration, this website relies on a backend (that makes the requests for you) ran by me and not Roblox<br>Blame the web team for disallowing webpages to request to their API<br>I do not store any data related to your requests<br><i>Please be responsible when using other people's avatars</i></code>
 <br>
