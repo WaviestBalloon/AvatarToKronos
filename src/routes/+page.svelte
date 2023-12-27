@@ -122,7 +122,7 @@
 		outputCommand = output;
 
 		console.log("Creating share link...");
-		generateShareLink();
+		shareLink = generateShareLink();
 
 		return output;
 	}
@@ -171,7 +171,6 @@
 		accessories = data.outfit;
 		bodyColour = data.body.skintone;
 		formattedAccessories = listAccessories();
-		shareLink = generateShareLink();
 		return data;
 	}
 
@@ -211,9 +210,7 @@
 			console.warn(`Unknown save hash type: ${type}`);
 			return;
 		}
-
-		console.log(data)
-
+		
 		return btoa(data);
 	}
 	function deleteSaveCookies(type) {
@@ -335,7 +332,7 @@
 		<button on:click={copyCommandChainToClipboard}>{copyText}</button>
 		<button on:click={createCommandChain}>Generate</button>
 		<br>
-		<code>Share link: <textarea autocomplete="off" class="textarea-link" rows="1">{shareLink}</textarea></code>
+		<code>Share link: <textarea autocomplete="off" class="textarea-link" rows="2">{shareLink}</textarea></code>
 		<!--<button on:click={createCommandChain}>Save current outfit</button><code style="color: #ff5c5c;">OVERWRITES PREVIOUSLY SAVED OUTFIT</code>-->
 	</div>
 </span>
