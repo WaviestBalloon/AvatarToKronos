@@ -329,8 +329,8 @@
 				<code style="color: #ff5c5c;">/// Current Editor \\\</code><br>
 				<button class="warning">CLEAR ACCESSORIES</button>
 				<br><code style="color: #ff5c5c;">/// Saved Data \\\</code><br>
-				<button class="warning">RESET SETTINGS</button>
-				<button class="warning">RESET ACCESSORIES</button>
+				<button class="warning" on:click={deleteSaveCookies("settings")}>RESET SETTINGS</button>
+				<button class="warning" on:click={deleteSaveCookies("outfit")}>DELETE OUTFITS</button>
 			</center>
 		</div>
 	</div>
@@ -366,7 +366,6 @@
 	</div>
 </span>
 
-<br><br>
-<br><br>
+<br><br><br><br>
 <code style="color: #ff5c5c;">[ Disclaimer ]<br>Due to the Roblox API's CORS configuration, this website relies on a backend (that makes the requests for you) ran by me and not Roblox<br>Blame the web team for disallowing webpages to request to their API<br>I do not store any data related to your requests<br><i>Please be responsible when using other people's avatars</i></code>
 <br>
