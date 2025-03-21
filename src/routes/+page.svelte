@@ -2,6 +2,7 @@
 	// @ts-nocheck ill bother with typings later :3
 	import { onMount } from "svelte";
 
+	// Please do not treat this as a public API for you to use in your own projects - I cannot guarantee it will always be online, or if the output will change, or if you might get banned by my reverse proxy's configuration!
 	const apiBackend = "https://atk.wav.blue"; // I was going to do EVERYTHING from the client-side but, CORS blocked all of my requests, so we have to proxy it through my server :(
 	const commands = {
 		"accessory": "!hat",
@@ -34,23 +35,25 @@
 	let outputCommand = "> No commands generated yet :(";
 	let accessories = [];
 	let bodyColour = 0;
-	let formattedAccessories = '> No user has been fetched yet! Enter in their username and hit "Fetch" to get their accessories.';
-	let copyText = "Copy to clipboard";
+	let formattedAccessories = '> No user has been fetched yet! Enter in their username or user ID and hit "Fetch" to get their accessories.';
+	let copyText = "Copy command chain"; // TODO: Refactor a lot of this :sob:
+	let copyTextShareLink = "Copy share link";
 	let shareLink = "> Share link will show here once generated!";
 
 	function listAccessories() {
 		let output = "";
 		for (let i = 0; i < accessories.length; i++) {
 			const accessory = accessories[i];
-			console.log(accessory);
+			console.log(`Listing accessory: ${JSON.stringify(accessory)}`);
 			if (ignoreList[accessory.whatIsIt]) continue; // If in ignore settings, skip
 
 			if (i == accessories.length - 1) {
-				output += `${accessory.name} (${accessory.accessoryType})`;
+				output += `- ${accessory.name} (${accessory.accessoryType})`;
 			} else {
-				output += `${accessory.name} (${accessory.accessoryType})\n`;
+				output += `- ${accessory.name} (${accessory.accessoryType})\n`;
 			}
 		}
+
 		return output;
 	}
 
@@ -184,7 +187,22 @@
 		navigator.clipboard.writeText(outputCommand).then(() => {
 			copyText = "Copied!";
 			setTimeout(() => {
-				copyText = "Copy to clipboard";
+				copyText = "Copy command chain";
+			}, 1000);
+		}).catch((err) => {
+			alert(`Failed to copy to clipboard...\n\nNerd Stuff: ${err}`);
+		});
+	}
+	function copyShareLinkToClipboard() {
+		if (outputCommand == "> No commands generated yet :(") {
+			alert("You haven't generated any commands yet!");
+			return;
+		}
+
+		navigator.clipboard.writeText(shareLink).then(() => {
+			copyTextShareLink = "Copied!";
+			setTimeout(() => {
+				copyTextShareLink = "Copy share link";
 			}, 1000);
 		}).catch((err) => {
 			alert(`Failed to copy to clipboard...\n\nNerd Stuff: ${err}`);
@@ -273,7 +291,7 @@
 				clearRules = settingsData.c;
 				shouldAutoUpdate = settingsData.s;
 			} catch (err) {
-				alert(`Failed to load attached settings from URL...\nIt is most likely corrupted!\n\nNerd Stuff: ${err}`);
+				alert(`Failed to load attached settings from URL...\nIt may have contained non-parsable characters!\n\nNerd Stuff: ${err}`);
 			}
 		}
 		if (outfitHash) {
@@ -287,7 +305,7 @@
 				formattedAccessories = listAccessories();
 				createCommandChain();
 			} catch (err) {
-				alert(`Failed to load outfit from URL...\nIt is most likely corrupted!\n\nNerd Stuff: ${err}`);
+				alert(`Failed to load outfit from URL...\nIt may have contained non-parsable characters!\n\nNerd Stuff: ${err}`);
 			}
 		}
 	});
@@ -306,7 +324,7 @@
 			<code>Settings</code>
 		</h1>
 		
-		<p>Delay per four commands: <br><input type="range" bind:value={waitDelay} on:change={updateCommandChain} min="0" max="10" step="0.1" /> <code>{waitDelay}s<br>(4-6s is the sweet spot for Kronos)</code></p>
+		<p>Delay per four commands: <br><input type="range" bind:value={waitDelay} on:change={updateCommandChain} min="0" max="10" step="0.1" /> <code>{waitDelay}s<br><code style="color: #ff5c5c;">KEEP ABOVE AT LEAST 4 SECONDS TO AVOID RATELIMITS</code></code></p>
 		<p><input type="checkbox" bind:checked={clearRules.accessories} on:change={updateCommandChain} /> Clear all accessories when ran</p>
 		<p><input type="checkbox" bind:checked={clearRules.shirt} on:change={updateCommandChain} /> Clear shirt when ran</p>
 		<p><input type="checkbox" bind:checked={clearRules.tshirt} on:change={updateCommandChain} /> Clear t-shirt when ran</p>
@@ -322,15 +340,15 @@
 		<button class="warning" on:click={toggleCollapsible}>DANGER ZONE OPTIONS</button>
 		<div class="warning-tape-background collapsible{collapsed === true ? " collapsed" : ""}">
 			<h3 class="block-header">
-				<img src="red-alert.svg" width=18.72px alt="SettingsIcon" class="header-icon">
-				<code style="color: #ff5c5c;">Danger Zone<br><i style="font-size: small;">Nothing here can be undone!<br>NOT IMPLEMENTED YET</i></code>
+				<img src="red-alert.svg" width=24px alt="SettingsIcon" class="header-icon"><br>
+				<code style="color: #ff5c5c;"><i style="font-size: small;">Nothing here can be undone!</i></code>
 			</h3>
 			<center>
-				<code style="color: #ff5c5c;">/// Current Editor \\\</code><br>
-				<button class="warning">CLEAR ACCESSORIES</button>
+				<!--<code style="color: #ff5c5c;">/// Current Editor \\\</code><br>
+				<button class="warning">CLEAR ACCESSORIES</button>-->
 				<br><code style="color: #ff5c5c;">/// Saved Data \\\</code><br>
 				<button class="warning" on:click={deleteSaveCookies("settings")}>RESET SETTINGS</button>
-				<button class="warning" on:click={deleteSaveCookies("outfit")}>DELETE OUTFITS</button>
+				<!--<button class="warning" on:click={deleteSaveCookies("outfit")}>FORGET CURRENT OUTFIT</button>-->
 			</center>
 		</div>
 	</div>
@@ -340,12 +358,8 @@
 			<img src="import.svg" alt="ImportIcon" class="header-icon">
 			<code>Create</code>
 		</h1>
-		
-		<!--<center>
-			<img src="https://t0.rbxcdn.com/30DAY-AvatarHeadshot-2BB2F5470323665D06A2307C5429B0F2-Png" width="20%" alt="AvatarPreview" class="pfp">
-		</center>-->
 
-		<p>Username/ID: <input type="search" bind:value={userInput} placeholder="Roblox username or user ID here" /> <button on:click={getUserInfo}>Fetch</button></p>
+		<p>Username/ID: <input type="search" bind:value={userInput} placeholder="Username or user ID here" /> <button on:click={getUserInfo}>Fetch</button></p>
 		<p>Wearing Accessories: </p>
 		<textarea autocomplete="off" rows="10" style="resize: none;">{formattedAccessories}</textarea>
 	</div>
@@ -357,15 +371,17 @@
 		</h1>
 	
 		<textarea autocomplete="off" rows="4">{outputCommand}</textarea>
-		<br><br>
+		<br>
 		<button on:click={copyCommandChainToClipboard}>{copyText}</button>
 		<button on:click={createCommandChain}>Generate</button>
-		<br>
+		<br><br>
 		<code>Share link: <textarea autocomplete="off" class="textarea-link" rows="2">{shareLink}</textarea></code>
-		<!--<button on:click={createCommandChain}>Save current outfit</button><code style="color: #ff5c5c;">OVERWRITES PREVIOUSLY SAVED OUTFIT</code>-->
+		<br>
+		<!--<button on:click={createCommandChain}>Save current outfit</button> <code style="color: #ff5c5c;">OVERWRITES PREVIOUSLY SAVED OUTFIT</code>-->
+		<button on:click={copyShareLinkToClipboard}>{copyTextShareLink}</button>
 	</div>
 </span>
 
 <br><br><br><br>
-<code style="color: #ff5c5c;">[ Disclaimer ]<br>Due to the Roblox API's CORS configuration, this website relies on a backend (that makes the requests for you) ran by me and not Roblox<br>Blame the web team for disallowing webpages to request to their API<br>I do not store any data related to your requests<br><i>Please be responsible when using other people's avatars</i></code>
+<code style="color: #ff5c5c;">[ Disclaimer ]<br>Due to the Roblox API's CORS configuration, this website relies on a backend (that makes the requests for you) ran by me and not Roblox<br>Blame the web team for disallowing webpages to request to their API<br>I do not store any data related to your requests<br><i>Please be responsible when using other people's avatars!</i></code>
 <br>

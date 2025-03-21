@@ -1,34 +1,22 @@
 @font-face {
-	font-family: gotham;
-	src: url("https://roblox.network/gothambook.otf");
-}
-@font-face {
-	font-family: gothambold;
-	src: url("https://roblox.network/gothamblack.otf");
-}
-@font-face {
-	font-family: gothamsemibold;
-	src: url("https://roblox.network/gothammedium.otf");
+	font-family: suse;
+	src: url("suse.ttf");
 }
 
 body, html {
 	margin: 0;
-	font-family: gotham;
+	font-family: suse;
 	background-color: #1b1b1b;
 	color: white;
 	padding: 10px;
-	background-image: url('https://fur.dev/dotlogoutbg.png');
-	background-size: 5px 5px;
+	background-image: url("noise.png");
+	background-size: 50px 50px;
 	background-position: center;
 	background-repeat: repeat;
 }
 
 button {
 	border-radius: 0% !important;
-}
-
-b {
-	font-family: gothambold;
 }
 
 p {
@@ -88,7 +76,8 @@ button:hover {
 
 .collapsible {
 	max-height: 100vh;
-	transition: all 1s ease-in-out;
+	transition: all 0.5s ease-in-out;
+	overflow: hidden;
 }
 .collapsed {
 	max-height: 0 !important;
@@ -128,15 +117,23 @@ button:hover {
 }
 
 .warning-tape-background {
-	background-image: url('https://avatartokronos.vercel.app/slash.svg');
+	background-image: url("slash.svg");
 	background-size: 5px 5px;
 	background-position: center;
 	background-repeat: repeat;
 	padding-top: 5px;
 	padding-bottom: 5px;
 	height: fit-content;
-
-	overflow: scroll !important;
+	box-shadow: 0 0 50px #9e3a3a40 inset;
+	border-top: 1px;
+	border-top-style: solid;
+	border-left: 1px;
+	border-left-style: solid;
+	border-right: 1px;
+	border-right-style: solid;
+	border-bottom: 1px;
+	border-bottom-style: solid;
+	border-color: #ff5c5c5b;
 }
 
 textarea {
@@ -153,6 +150,8 @@ textarea {
 	resize: vertical;
 	overflow-x: scroll;
 	width: calc(100% - 12px);
+	scrollbar-color: rgb(105, 190, 65) #ffffff00;
+	scrollbar-width: thin;
 }
 .textarea-link {
 	overflow-x: clip !important;
