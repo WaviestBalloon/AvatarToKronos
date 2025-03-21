@@ -9,10 +9,6 @@ body, html {
 	background-color: #1b1b1b;
 	color: white;
 	padding: 10px;
-	background-image: url("noise.png");
-	background-size: 50px 50px;
-	background-position: center;
-	background-repeat: repeat;
 }
 
 button {
